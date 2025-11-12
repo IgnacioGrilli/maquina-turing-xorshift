@@ -7,6 +7,7 @@ import { InfoPanel } from "./components/InfoPanel";
 import { SequenceDisplay } from "./components/SequenceDisplay";
 import { ControlButtons } from "./components/ControlButtons";
 import { TuringMachine } from "./components/TuringMachine";
+import { TapeDisplay } from "./components/TapeDisplay";
 
 function App() {
   const [seed, setSeed] = useState("110010");
@@ -23,6 +24,9 @@ function App() {
   const [speed, setSpeed] = useState(500);
   const [showSettings, setShowSettings] = useState(false);
   const intervalRef = useRef(null);
+  const [currentTapeState, setCurrentTapeState] = useState(null);
+  const [intermediateStepIndex, setIntermediateStepIndex] = useState(0);
+  const machineRef = useRef(null);
 
   const presetConfigs = [
     { name: "(1,3,2)", a: 1, b: 3, c: 2 },
@@ -45,6 +49,9 @@ function App() {
     setCycleDetected(false);
     setCurrentIteration(0);
     setIsPaused(false);
+    setCurrentTapeState(null);
+    setIntermediateStepIndex(0);
+    machineRef.current = null;
   };
 
   const runMachine = () => {
@@ -58,53 +65,86 @@ function App() {
     setGeneratedValues([seed]);
     setCurrentIteration(0);
     setCurrentState("RUNNING");
+    setIntermediateStepIndex(0);
 
     const machine = new TuringMachine(seed, a, b, c);
+    machineRef.current = machine;
     let current = seed;
     let iteration = 0;
+    let currentStepIndex = 0;
+    let intermediateStates = [];
+
     // ensure we don't leave a stale interval running
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
 
+    // Mostrar estado inicial
+    setCurrentTapeState({
+      tape: seed,
+      head: 0,
+      stepName: "Esperando inicio...",
+      operation: `Semilla inicial: ${seed}`
+    });
+
     const interval = setInterval(() => {
       // if paused, skip this tick
       if (isPausedRef.current) return;
 
-      const next = machine.executeIteration(current);
+      // Si estamos mostrando estados intermedios
+      if (intermediateStates.length > 0) {
+        if (currentStepIndex < intermediateStates.length) {
+          setCurrentTapeState(intermediateStates[currentStepIndex]);
+          setIntermediateStepIndex(currentStepIndex);
+          currentStepIndex++;
+          return;
+        } else {
+          // Terminamos de mostrar todos los estados intermedios
+          intermediateStates = [];
+          currentStepIndex = 0;
 
-      if (machine.checkRepetition(next)) {
-        setGeneratedValues((prev) => [...prev, next]);
-        setCycleDetected(true);
-        setCurrentState("CYCLE_DETECTED");
-        setIsRunning(false);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
+          // Continuar con la siguiente iteración
+          const next = machine.executeIteration(current);
+          intermediateStates = machine.getIntermediateStates();
+
+          if (machine.checkRepetition(next)) {
+            setGeneratedValues((prev) => [...prev, next]);
+            setCycleDetected(true);
+            setCurrentState("CYCLE_DETECTED");
+            setIsRunning(false);
+            if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+              intervalRef.current = null;
+            }
+            return;
+          }
+
+          machine.generatedSequence.push(next);
+          setGeneratedValues((prev) => [...prev, next]);
+          setCurrentIteration((prev) => prev + 1);
+          current = next;
+          iteration++;
+
+          if (iteration >= 100) {
+            setCurrentState("MAX_ITERATIONS");
+            setIsRunning(false);
+            if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+              intervalRef.current = null;
+            }
+            return;
+          }
         }
-        return;
+      } else {
+        // Primera iteración o empezar nueva
+        const next = machine.executeIteration(current);
+        intermediateStates = machine.getIntermediateStates();
+        currentStepIndex = 0;
       }
-
-      machine.generatedSequence.push(next);
-      setGeneratedValues((prev) => [...prev, next]);
-      setCurrentIteration((prev) => prev + 1);
-      current = next;
-      iteration++;
-
-      if (iteration >= 100) {
-        setCurrentState("MAX_ITERATIONS");
-        setIsRunning(false);
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        }
-      }
-    }, speed);
+    }, speed); // Usar la velocidad configurada por el usuario
 
     intervalRef.current = interval;
-
-    // sync will be handled by an effect (keeps ref up-to-date across renders)
   };
 
   useEffect(() => {
@@ -150,6 +190,8 @@ function App() {
             b={b}
             c={c}
           />
+
+          <TapeDisplay tapeState={currentTapeState} />
 
           {cycleDetected && (
             <CycleAlert cycleLength={generatedValues.length - 1} />

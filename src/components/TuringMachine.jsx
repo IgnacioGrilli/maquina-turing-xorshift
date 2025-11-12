@@ -8,6 +8,7 @@ export class TuringMachine {
     this.c = c;
     this.workingArea = [];
     this.generatedSequence = [initialValue];
+    this.intermediateStates = [];
   }
 
   shiftLeft(value, positions) {
@@ -34,16 +35,81 @@ export class TuringMachine {
   }
 
   executeIteration(currentValue) {
-    let shifted = this.shiftLeft(currentValue, this.a);
-    let step1 = this.xorOperation(currentValue, shifted);
+    this.intermediateStates = [];
+    const len = currentValue.length;
+    
+    // Estado inicial - cabezal en posición 0
+    this.intermediateStates.push({
+      tape: currentValue,
+      head: 0,
+      stepName: "Estado Inicial",
+      operation: `Iniciando en posición 0`
+    });
 
-    shifted = this.shiftRight(step1, this.b);
-    let step2 = this.xorOperation(step1, shifted);
+    // Paso 1: Shift Left y XOR bit a bit
+    let shifted1 = this.shiftLeft(currentValue, this.a);
+    let step1Array = currentValue.split("");
+    
+    for (let i = 0; i < len; i++) {
+      // Calcular XOR para este bit
+      step1Array[i] = currentValue[i] === shifted1[i] ? "0" : "1";
+      
+      this.intermediateStates.push({
+        tape: step1Array.join(""),
+        head: i,
+        stepName: `Paso 1: XOR bit ${i}`,
+        operation: `${currentValue[i]} ⊕ ${shifted1[i]} = ${step1Array[i]}`
+      });
+    }
+    const step1 = step1Array.join("");
 
-    shifted = this.shiftLeft(step2, this.c);
-    let step3 = this.xorOperation(step2, shifted);
+    // Paso 2: Shift Right y XOR bit a bit
+    let shifted2 = this.shiftRight(step1, this.b);
+    let step2Array = step1.split("");
+    
+    for (let i = 0; i < len; i++) {
+      // Calcular XOR para este bit
+      step2Array[i] = step1[i] === shifted2[i] ? "0" : "1";
+      
+      this.intermediateStates.push({
+        tape: step2Array.join(""),
+        head: i,
+        stepName: `Paso 2: XOR bit ${i}`,
+        operation: `${step1[i]} ⊕ ${shifted2[i]} = ${step2Array[i]}`
+      });
+    }
+    const step2 = step2Array.join("");
+
+    // Paso 3: Shift Left y XOR bit a bit
+    let shifted3 = this.shiftLeft(step2, this.c);
+    let step3Array = step2.split("");
+    
+    for (let i = 0; i < len; i++) {
+      // Calcular XOR para este bit
+      step3Array[i] = step2[i] === shifted3[i] ? "0" : "1";
+      
+      this.intermediateStates.push({
+        tape: step3Array.join(""),
+        head: i,
+        stepName: `Paso 3: XOR bit ${i}`,
+        operation: `${step2[i]} ⊕ ${shifted3[i]} = ${step3Array[i]}`
+      });
+    }
+    const step3 = step3Array.join("");
+
+    // Estado final - cabezal retorna a posición 0
+    this.intermediateStates.push({
+      tape: step3,
+      head: 0,
+      stepName: "Completo",
+      operation: `Resultado: ${step3}`
+    });
 
     return step3;
+  }
+
+  getIntermediateStates() {
+    return this.intermediateStates;
   }
 
   checkRepetition(value) {
