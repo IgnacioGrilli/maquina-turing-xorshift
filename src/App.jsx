@@ -191,7 +191,11 @@ function App() {
             c={c}
           />
 
-          <TapeDisplay tapeState={currentTapeState} />
+          {/* CAMBIO PRINCIPAL: Pasamos generatedValues como prop */}
+          <TapeDisplay 
+            tapeState={currentTapeState} 
+            generatedValues={generatedValues}
+          />
 
           {cycleDetected && (
             <CycleAlert cycleLength={generatedValues.length - 1} />
