@@ -13,10 +13,11 @@ export const SettingsPanel = ({
   setC,
   isRunning,
   presetConfigs,
+  onInitialize,
 }) => {
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 mb-6 border border-blue-200 shadow-sm">
-      <h3 className="font-semibold text-gray-700 mb-3">
+      <h3 className="font-semibold text-gray-700 mb-4 text-lg">
         Configuración de Parámetros
       </h3>
 
@@ -30,24 +31,31 @@ export const SettingsPanel = ({
             value={seed}
             onChange={(e) => setSeed(e.target.value)}
             disabled={isRunning}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md font-mono focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="110010"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Decimal: {parseInt(seed || "0", 2)}
+          </p>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Velocidad (ms)
+            Velocidad de ejecución: {speed}ms por paso
           </label>
           <input
             type="range"
-            min="100"
-            max="2000"
+            min="10"
+            max="1000"
+            step="10"
             value={speed}
             onChange={(e) => setSpeed(Number(e.target.value))}
             className="w-full"
           />
-          <span className="text-sm text-gray-600">{speed}ms</span>
+          <div className="flex justify-between text-xs text-gray-600 mt-1">
+            <span>Rápido</span>
+            <span>Lento</span>
+          </div>
         </div>
       </div>
 
@@ -63,7 +71,7 @@ export const SettingsPanel = ({
             disabled={isRunning}
             min="1"
             max="6"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
         <div>
@@ -77,7 +85,7 @@ export const SettingsPanel = ({
             disabled={isRunning}
             min="1"
             max="6"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
         <div>
@@ -91,7 +99,7 @@ export const SettingsPanel = ({
             disabled={isRunning}
             min="1"
             max="6"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
       </div>
@@ -105,6 +113,16 @@ export const SettingsPanel = ({
         }}
         disabled={isRunning}
       />
+
+      <div className="mt-4">
+        <button
+          onClick={onInitialize}
+          disabled={isRunning}
+          className="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md font-semibold"
+        >
+          Inicializar Máquina
+        </button>
+      </div>
     </div>
   );
 };
