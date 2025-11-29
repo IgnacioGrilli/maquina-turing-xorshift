@@ -427,30 +427,35 @@ export class TuringMachine {
         return true;
 
       case State.COMPARE_INIT:
-        if (this.counter < this.generatedValues.length) {
-          const current = this.readSection(this.readPos1, this.bitLength);
-          const previous = this.generatedValues[this.counter];
-          
-          this.currentStateDescription = `Comparando x${this.currentIteration} con x${this.counter}`;
-          this.executionLog.push(`Comparando: ${current} vs ${previous}`);
-          
-          if (current === previous) {
-            this.cycleDetected = true;
-            this.state = State.CYCLE_DETECTED;
-            this.executionLog.push('¡CICLO DETECTADO!');
-            this.executionLog.push(`Período = ${this.generatedValues.length}`);
-            this.executionLog.push(`Valor repetido: ${current} (x${this.counter})`);
-            return true;
-          }
-          
-          this.counter++;
-        } else {
-          const newValue = this.readSection(this.readPos1, this.bitLength);
+        // Inicializar comparación bit a bit directamente sobre la cinta.
+        // No usamos la lista de strings `generatedValues` para comparar.
+        this.compareCurrentPos = this.readPos1; // inicio del valor actual en cinta
+        this.previousPositions = [];
+
+        // Recolectar posiciones de inicio de valores anteriores escaneando la cinta
+        let p = 1;
+        while (p < this.compareCurrentPos) {
+          this.previousPositions.push(p);
+          p = this.findNextBlank(p) + 1;
+          if (p <= 1) break; // protección ante bucle
+        }
+
+        this.comparePrevIndex = 0;
+        this.compareBitPosition = 0;
+        this.comparePhase = 0; // fases internas de la comprobación
+        this.compareMarkedBit = null;
+        this.comparePreviousBit = null;
+
+        this.currentStateDescription = `Iniciando comparación bit a bit de x${this.currentIteration}`;
+
+        if (this.previousPositions.length === 0) {
+          // No hay valores anteriores: considerar como nuevo
+          const newValue = this.readSection(this.compareCurrentPos, this.bitLength);
           this.generatedValues.push(newValue);
           this.executionLog.push(`x${this.currentIteration} = ${newValue} (nuevo)`);
           this.executionLog.push('');
-          
-          // Copiar resultado final para siguiente iteración
+
+          // Preparar siguiente iteración (misma lógica previa)
           this.copySourcePos = this.readPos1;
           this.copyTargetPos = this.findNextBlank(this.readPos1 + this.bitLength) + 1;
           this.counter = 0;
@@ -458,7 +463,176 @@ export class TuringMachine {
           this.state = State.PRE_SHIFT_COPY_MARK;
           this.phaseStep = 0;
           this.currentIteration++;
+        } else {
+          // Pasamos al estado de verificación bit a bit (hacer micro-pasos en COMPARE_CHECK)
+          this.state = State.COMPARE_CHECK;
         }
+
+        return true;
+
+      case State.COMPARE_CHECK:
+        // Máquina de pasos internos para la comparación bit a bit.
+        // `comparePhase` define la sub-acción a ejecutar en cada llamada a step().
+        // Fases:
+        // 0 = marcar bit actual con '#'
+        // 1 = moverse al inicio del valor previo seleccionado
+        // 2 = moverse al bit correspondiente del valor previo
+        // 3 = leer bit previo
+        // 4 = retornar al bit marcado
+        // 5 = restaurar bit marcado y decidir siguiente acción
+        // 7 = ALL_MATCH (señal interna)
+        // 9 = NO_CYCLE (señal interna)
+
+        const phase = this.comparePhase;
+
+        if (phase === 0) {
+          // Marcar bit actual
+          this.headPosition = this.compareCurrentPos + this.compareBitPosition;
+          this.compareMarkedBit = this.read();
+          if (this.compareMarkedBit === '▲' || this.compareMarkedBit === '#') {
+            this.executionLog.push(`ERROR: Valor inválido en pos ${this.headPosition}`);
+            this.state = State.HALT;
+            return true;
+          }
+          this.write('#');
+          this.currentStateDescription = `Marcando bit ${this.compareBitPosition} del valor actual: '${this.compareMarkedBit}'`;
+          this.comparePhase = 1;
+          this.transitions++;
+          return true;
+        }
+
+        if (phase === 1) {
+          // Ir al inicio del valor anterior seleccionado
+          const prevStart = this.previousPositions[this.comparePrevIndex];
+          if (this.headPosition < prevStart) {
+            this.moveRight();
+            this.currentStateDescription = `Navegando hacia inicio previo (pos ${prevStart})`;
+          } else if (this.headPosition > prevStart) {
+            this.moveLeft();
+            this.currentStateDescription = `Retrocediendo hacia inicio previo (pos ${prevStart})`;
+          } else {
+            this.comparePhase = 2;
+          }
+          return true;
+        }
+
+        if (phase === 2) {
+          // Posicionarse en el bit correspondiente del valor previo
+          const prevStart = this.previousPositions[this.comparePrevIndex];
+          const targetBitPos = prevStart + this.compareBitPosition;
+          if (this.headPosition < targetBitPos) {
+            this.moveRight();
+            this.currentStateDescription = `Avanzando al bit ${this.compareBitPosition} del valor previo`;
+          } else if (this.headPosition > targetBitPos) {
+            this.moveLeft();
+            this.currentStateDescription = `Retrocediendo al bit ${this.compareBitPosition} del valor previo`;
+          } else {
+            this.comparePhase = 3;
+          }
+          return true;
+        }
+
+        if (phase === 3) {
+          // Leer bit previo
+          this.comparePreviousBit = this.read();
+          this.currentStateDescription = `Leyendo bit ${this.compareBitPosition} del valor previo: '${this.comparePreviousBit}'`;
+          this.comparePhase = 4;
+          return true;
+        }
+
+        if (phase === 4) {
+          // Volver al bit marcado en el valor actual
+          const markedPos = this.compareCurrentPos + this.compareBitPosition;
+          if (this.headPosition < markedPos) {
+            this.moveRight();
+            this.currentStateDescription = `Retornando al bit marcado (pos ${markedPos})`;
+          } else if (this.headPosition > markedPos) {
+            this.moveLeft();
+            this.currentStateDescription = `Retrocediendo al bit marcado (pos ${markedPos})`;
+          } else {
+            // Llegamos al marcador
+            if (this.read() === '#') {
+              this.comparePhase = 5;
+              this.transitions++;
+            } else {
+              this.executionLog.push(`ERROR: No se encontró # en pos ${markedPos}`);
+              this.state = State.HALT;
+            }
+          }
+          return true;
+        }
+
+        if (phase === 5) {
+          // Restaurar el bit marcado y decidir siguiente acción
+          this.write(this.compareMarkedBit);
+          this.currentStateDescription = `Restaurando bit '${this.compareMarkedBit}' en pos ${this.headPosition}`;
+
+          if (this.compareMarkedBit !== this.comparePreviousBit) {
+            // Mismatch: probar siguiente valor previo
+            this.comparePrevIndex++;
+            this.compareBitPosition = 0;
+            if (this.comparePrevIndex >= this.previousPositions.length) {
+              // No hay más valores previos -> NO HAY CICLO
+              this.executionLog.push(`No coincide con ningún valor previo`);
+              this.comparePhase = 9; // señal para NO_CYCLE
+            } else {
+              this.comparePhase = 0; // marcar nuevamente el mismo bit y comparar con siguiente previo
+            }
+            this.transitions++;
+            return true;
+          } else {
+            // Bits iguales: avanzar al siguiente bit del mismo previo
+            this.compareBitPosition++;
+            if (this.compareBitPosition >= this.bitLength) {
+              // Todos los bits coinciden -> CICLO
+              this.comparePhase = 7; // señal de TODOS COINCIDIERON
+            } else {
+              this.comparePhase = 0; // marcar siguiente bit y continuar
+            }
+            this.transitions++;
+            return true;
+          }
+        }
+
+        // Señales internas finales: 7 = ALL_MATCH, 9 = NO_CYCLE
+        if (this.comparePhase === 7) {
+          // Se detectó ciclo
+          const currentValue = this.readSection(this.compareCurrentPos, this.bitLength);
+          this.cycleDetected = true;
+          this.executionLog.push('');
+          this.executionLog.push('═══════════════════════════════════');
+          this.executionLog.push('      ¡CICLO DETECTADO!');
+          this.executionLog.push('═══════════════════════════════════');
+          this.executionLog.push(`Valor repetido: ${currentValue}`);
+          this.executionLog.push(`x${this.currentIteration} coincide con previo en pos ${this.previousPositions[this.comparePrevIndex]}`);
+          this.executionLog.push(`Pasos totales: ${this.stepCount}`);
+          this.executionLog.push(`Transiciones: ${this.transitions}`);
+          this.currentStateDescription = `¡CICLO! x${this.currentIteration} = valor previo`;
+          this.transitions++;
+          this.state = State.CYCLE_DETECTED;
+          return true;
+        }
+
+        if (this.comparePhase === 9) {
+          // No se encontró coincidencia con ningún valor previo => nuevo valor
+          const newValue = this.readSection(this.compareCurrentPos, this.bitLength);
+          this.generatedValues.push(newValue);
+          this.executionLog.push('');
+          this.executionLog.push(`✓ x${this.currentIteration} = ${newValue} (NUEVO)`);
+          this.executionLog.push(`  No coincide con ningún valor anterior`);
+
+          // Preparar siguiente iteración (misma lógica previa)
+          this.copySourcePos = this.readPos1;
+          this.copyTargetPos = this.findNextBlank(this.readPos1 + this.bitLength) + 1;
+          this.counter = 0;
+          this.phaseStep = 0;
+          this.currentIteration++;
+          this.transitions++;
+          this.state = State.PRE_SHIFT_COPY_MARK;
+          return true;
+        }
+
+        // Por defecto, no avanzar
         return true;
 
       case State.CYCLE_DETECTED:

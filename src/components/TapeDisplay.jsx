@@ -67,55 +67,59 @@ export const TapeDisplay = ({ tape, headPosition, currentState }) => {
         </p>
       </div>
 
-      {/* Indicador del cabezal */}
-      <div className="flex justify-start mb-2 overflow-x-auto">
-        <div className="flex items-center px-4">
-          {visibleTape.map((_, index) => {
-            const actualIndex = start + index;
-            return (
-              <div key={actualIndex} className="w-8 h-6 flex justify-center">
-                {actualIndex === headPosition && (
-                  <div className="text-xl text-red-600 animate-bounce">▼</div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Cinta con valores */}
+      {/* Cinta con indicador de cabezal alineado */}
       <div className="flex justify-start overflow-x-auto pb-4">
-        <div className="flex items-center gap-1 px-4">
-          {visibleTape.map((symbol, index) => {
-            const actualIndex = start + index;
-            const isHead = actualIndex === headPosition;
-            const isBlank = symbol === '▲';
-            const isMarker = symbol === '#';
-            
-            return (
-              <div
-                key={actualIndex}
-                className={`
-                  w-8 h-8 flex items-center justify-center
-                  border font-mono text-sm font-bold
-                  transition-all duration-200
-                  ${
-                    isHead
-                      ? "border-red-500 bg-red-100 text-red-800 scale-110 shadow-lg"
-                      : isMarker
-                      ? "border-yellow-500 bg-yellow-100 text-yellow-800"
-                      : isBlank
-                      ? "border-gray-300 bg-gray-50 text-gray-400"
-                      : symbol === "1"
-                      ? "border-blue-400 bg-blue-50 text-blue-800"
-                      : "border-green-400 bg-green-50 text-green-800"
-                  }
-                `}
-              >
-                {symbol}
-              </div>
-            );
-          })}
+        <div className="flex flex-col items-start px-4">
+          {/* Fila del indicador del cabezal */}
+          <div className="flex items-end gap-1 mb-1 h-6">
+            {visibleTape.map((_, index) => {
+              const actualIndex = start + index;
+              return (
+                <div
+                  key={`head-${actualIndex}`}
+                  className="w-8 h-6 flex items-end justify-center"
+                >
+                  {actualIndex === headPosition && (
+                    <div className="text-xl text-red-600 animate-bounce leading-none">▼</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Fila de la cinta con valores */}
+          <div className="flex items-center gap-1">
+            {visibleTape.map((symbol, index) => {
+              const actualIndex = start + index;
+              const isHead = actualIndex === headPosition;
+              const isBlank = symbol === '▲';
+              const isMarker = symbol === '#';
+
+              return (
+                <div
+                  key={`tape-${actualIndex}`}
+                  className={`
+                    w-8 h-8 flex items-center justify-center
+                    border font-mono text-sm font-bold
+                    transition-all duration-200
+                    ${
+                      isHead
+                        ? "border-red-500 bg-red-100 text-red-800 scale-110 shadow-lg"
+                        : isMarker
+                        ? "border-yellow-500 bg-yellow-100 text-yellow-800"
+                        : isBlank
+                        ? "border-gray-300 bg-gray-50 text-gray-400"
+                        : symbol === "1"
+                        ? "border-blue-400 bg-blue-50 text-blue-800"
+                        : "border-green-400 bg-green-50 text-green-800"
+                    }
+                  `}
+                >
+                  {symbol}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
