@@ -2,29 +2,29 @@
 
 Simulador de una Máquina de Turing que implementa un generador de números pseudoaleatorios XOR-Shift.
 
-**Autor:** Ignacio Grilli, Matias Casteglione
+**Autor:** Ignacio Grilli, Matias Casteglione  
 **Institución:** Universidad Nacional de la Patagonia San Juan Bosco  
 **Curso:** Fundamentos Teoricos de la Informatica  
-**Fecha:** Noviembre 2024
+**Fecha:** Noviembre 2025
 
 ---
 
-## 📋 Descripción del Proyecto
+## Descripción del Proyecto
 
-Este proyecto implementa una **Máquina de Turing** que simula el comportamiento de un generador de números pseudoaleatorios del tipo XOR-Shift. El objetivo es comprender cómo una máquina determinista puede generar secuencias que parecen aleatorias, y estudiar cómo el período (repetición hasta volver a encontrar el número inicial) depende de los parámetros y del tamaño de palabra binaria.
+Este proyecto implementa una **Máquina de Turing** que simula el comportamiento de un generador de números pseudoaleatorios del tipo XOR-Shift. El objetivo es comprender cómo una máquina determinista puede generar secuencias que parecen aleatorias, y estudiar cómo el período depende de los parámetros y del tamaño de palabra binaria.
 
 ### Características principales:
 
-- ✅ **Implementación fiel al modelo de Turing**: Cinta infinita, estados discretos, transiciones atómicas
-- ✅ **22 estados diferentes**: Cada fase del algoritmo descompuesta en operaciones básicas
-- ✅ **Operaciones paso a paso**: Cada llamada ejecuta UNA sola transición de estado
-- ✅ **Visualización en tiempo real**: Cinta, cabezal, estados y log de ejecución
-- ✅ **Tres modos de ejecución**: Manual, automático y rápido
-- ✅ **Detección automática de ciclos**: Calcula el período de la secuencia generada
+- **Implementación modelo de Turing**: Cinta infinita, estados discretos, transiciones atómicas
+- **22 estados diferentes**: Cada fase del algoritmo descompuesta en operaciones básicas
+- **Operaciones paso a paso**: Cada llamada ejecuta UNA sola transición de estado
+- **Visualización en tiempo real**: Cinta, cabezal, estados y log de ejecución
+- **Tres modos de ejecución**: Manual, automático y rápido
+- **Detección automática de ciclos**: Calcula el período de la secuencia generada
 
 ---
 
-## 🎯 El Algoritmo XOR-Shift
+## El Algoritmo XOR-Shift
 
 El generador XOR-Shift aplica tres operaciones sobre un valor binario:
 
@@ -43,7 +43,7 @@ Con los parámetros correctos y 6 bits, se puede alcanzar un período de **63 va
 
 ---
 
-## 🔧 Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
 ### Frontend:
 - **React 19**: Framework de interfaz de usuario
@@ -57,7 +57,7 @@ Con los parámetros correctos y 6 bits, se puede alcanzar un período de **63 va
 
 ---
 
-## 📦 Instalación
+## Instalación
 
 ### Prerrequisitos:
 - Node.js 18 o superior
@@ -89,7 +89,7 @@ npm run preview
 
 ---
 
-## 🎮 Uso de la Aplicación
+## Uso de la Aplicación
 
 ### 1. Configuración inicial
 
@@ -124,7 +124,7 @@ npm run preview
 
 #### Modo Rápido (Resultados):
 ```
-1. Click en "⚡ Ejecutar Completo"
+1. Click en "Ejecutar Completo"
 2. Espera 2-5 segundos
 3. Ver resultado final
 ```
@@ -145,7 +145,7 @@ Para obtener el **período máximo de 63** con 6 bits, usa uno de estos parámet
 
 ---
 
-## 🏗️ Arquitectura del Proyecto
+## Arquitectura del Proyecto
 
 ```
 maquina-turing-xorshift/
@@ -176,7 +176,7 @@ maquina-turing-xorshift/
 
 ---
 
-## 🧩 Componentes Principales
+## Componentes Principales
 
 ### TuringMachine.js
 
@@ -213,122 +213,3 @@ Visualiza la cinta de Turing:
 - Indica posición del cabezal con `▼`
 - Colores según tipo de símbolo
 - Scroll horizontal para navegar
-
----
-
-## 🎓 Conceptos de Teoría de la Computación
-
-### ¿Qué es una Máquina de Turing?
-
-Una Máquina de Turing es un modelo matemático de computación que consta de:
-
-1. **Cinta infinita**: Array que puede crecer indefinidamente
-2. **Cabezal de lectura/escritura**: Puede leer, escribir y moverse
-3. **Estados finitos**: Conjunto discreto de estados posibles
-4. **Función de transición**: δ(estado, símbolo) → (nuevo_estado, símbolo, dirección)
-
-### Diferencias clave con programación convencional:
-
-| Programación Normal | Máquina de Turing |
-|---------------------|-------------------|
-| `array.shift()` | ~100 pasos |
-| `a XOR b` | ~20 pasos por bit |
-| Operaciones de alto nivel | Operaciones atómicas |
-| Resultado inmediato | Miles de transiciones |
-
----
-
-## 📊 Complejidad y Rendimiento
-
-### Métricas para generar 63 valores (período completo):
-
-- **Pasos ejecutados**: ~50,000
-- **Transiciones de estado**: ~10,000
-- **Celdas de cinta utilizadas**: ~400
-- **Tiempo (modo rápido)**: 2-5 segundos
-- **Tiempo (modo animado 50ms)**: ~5 minutos
-
-### Por iteración (generar un valor):
-
-- **Pasos**: ~800
-- **Operaciones de shift**: 3 shifts × (6 bits + relleno)
-- **Operaciones XOR**: 3 XORs × 6 bits = 18 operaciones
-- **Copias de valores**: 4 copias completas
-
----
-
-## 🔬 Experimentación
-
-### Pruebas sugeridas:
-
-1. **Período vs Parámetros**:
-   ```
-   Prueba: (1,1,1), (1,2,3), (2,3,4), etc.
-   Observa: ¿Cómo cambia el período?
-   ```
-
-2. **Tamaño de semilla**:
-   ```
-   Prueba: 4 bits, 6 bits, 8 bits
-   Observa: ¿Cómo crece el período máximo?
-   Nota: 2^n - 1 es el máximo teórico
-   ```
-
-3. **Valores que generan ciclos cortos**:
-   ```
-   Prueba: 000000, 111111
-   Observa: ¿Qué pasa con valores extremos?
-   ```
-
----
-## 🐛 Problemas Conocidos
-
-### Navegador se congela momentáneamente:
-**Causa**: Modo "Ejecutar Completo" procesa ~50,000 pasos en un bucle.  
-**Solución**: Esperar 2-5 segundos. Esto es normal y esperado.
-
-### Cinta muy larga causa scroll:
-**Causa**: La cinta crece para acomodar todas las operaciones.  
-**Solución**: Usa el scroll horizontal para navegar. Todo el contenido está visible.
-
-
-## 📄 Licencia
-
-MIT License
-
-Copyright (c) 2024 Ignacio Grilli, Matias Casteglione
-
-Se permite el uso, copia, modificación y distribución de este software con fines educativos y académicos.
-
-## 👨‍💻 Autor
-**Ignacio Grilli, , Matias Casteglione**
-- GitHub: [@IgnacioGrilli](https://github.com/IgnacioGrilli)
-- Proyecto: [maquina-turing-xorshift](https://github.com/IgnacioGrilli/maquina-turing-xorshift)
-
----
-## 📞 Soporte
-
-Para preguntas o problemas:
-1. Revisa la documentación en `/docs`
-2. Abre un Issue en GitHub
-3. Consulta los archivos `.md` en el proyecto
-
----
-
-## 🎯 Objetivos Académicos Cumplidos
-
-- ✅ Implementar una Máquina de Turing funcional
-- ✅ Simular un algoritmo complejo (XOR-Shift)
-- ✅ Demostrar comprensión de teoría de la computación
-- ✅ Aplicar conceptos de estados, transiciones y cinta infinita
-- ✅ Visualizar el funcionamiento interno de una MT
-- ✅ Documentar completamente el proyecto
-
----
-**Versión del Proyecto**: 1.0.0  
-**Última actualización**: Noviembre 2024  
-**Estado**: ✅ Completo y funcional
-
-**¡Gracias por usar este simulador de Máquina de Turing!** 🎉
-
-
