@@ -8,7 +8,6 @@ import { TapeDisplay } from "./components/TapeDisplay";
 import { ExecutionLog } from "./components/ExecutionLog";
 import { SequenceDisplay } from "./components/SequenceDisplay";
 import { CycleAlert } from "./components/CycleAlert";
-import { InfoPanel } from "./components/InfoPanel";
 
 function App() {
   // Configuración
@@ -75,16 +74,18 @@ function App() {
     // Crear nueva máquina
     const newMachine = new TuringMachine(seed, a, b, c);
     setMachine(newMachine);
-    
+
     // Actualizar estado inicial
     updateDisplay(newMachine);
-    
-    alert("Máquina inicializada correctamente. Presiona 'Ejecutar' para comenzar.");
+
+    alert(
+      "Máquina inicializada correctamente. Presiona 'Ejecutar' para comenzar."
+    );
   };
 
   const updateDisplay = (m) => {
     if (!m) return;
-    
+
     const state = m.getTapeState();
     setTapeState(state);
     setGeneratedValues(m.getGeneratedValues());
@@ -130,8 +131,8 @@ function App() {
       if (machine.isCycleDetected()) {
         alert(
           `¡Ciclo detectado!\nPeríodo: ${machine.getCycleLength()} valores\n` +
-          `Transiciones: ${machine.getTransitions()}\n` +
-          `Pasos: ${machine.getStepCount()}`
+            `Transiciones: ${machine.getTransitions()}\n` +
+            `Pasos: ${machine.getStepCount()}`
         );
       } else if (steps >= maxSteps) {
         alert(`Alcanzado límite de ${maxSteps} pasos sin detectar ciclo`);
@@ -141,10 +142,10 @@ function App() {
 
   const executeStep = () => {
     if (!machine) return false;
-    
+
     const continued = machine.step();
     updateDisplay(machine);
-    
+
     if (machine.isCycleDetected()) {
       setIsRunning(false);
       if (intervalRef.current) {
@@ -153,12 +154,12 @@ function App() {
       }
       alert(
         `¡Ciclo detectado!\nPeríodo: ${machine.getCycleLength()} valores\n` +
-        `Transiciones: ${machine.getTransitions()}\n` +
-        `Pasos: ${machine.getStepCount()}`
+          `Transiciones: ${machine.getTransitions()}\n` +
+          `Pasos: ${machine.getStepCount()}`
       );
       return false;
     }
-    
+
     return continued;
   };
 
@@ -180,9 +181,9 @@ function App() {
 
     const interval = setInterval(() => {
       if (isPausedRef.current) return;
-      
+
       const continued = executeStep();
-      
+
       if (!continued) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -257,16 +258,14 @@ function App() {
           />
 
           {tapeState && (
-            <TapeDisplay 
+            <TapeDisplay
               tape={tapeState.tape}
               headPosition={tapeState.headPosition}
               currentState={tapeState.currentStateDescription}
             />
           )}
 
-          {cycleDetected && (
-            <CycleAlert cycleLength={generatedValues.length} />
-          )}
+          {cycleDetected && <CycleAlert cycleLength={generatedValues.length} />}
 
           {generatedValues.length > 0 && (
             <SequenceDisplay
@@ -275,11 +274,7 @@ function App() {
             />
           )}
 
-          {executionLog.length > 0 && (
-            <ExecutionLog log={executionLog} />
-          )}
-
-          <InfoPanel />
+          {executionLog.length > 0 && <ExecutionLog log={executionLog} />}
         </div>
       </div>
     </div>

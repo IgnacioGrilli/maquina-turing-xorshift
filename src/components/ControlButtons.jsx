@@ -20,7 +20,7 @@ export const ControlButtons = ({
         <StepForward className="w-5 h-5" />
         Paso (Step)
       </button>
-      
+
       <button
         onClick={onRun}
         disabled={!hasMachine}
@@ -49,7 +49,7 @@ export const ControlButtons = ({
         <FastForward className="w-5 h-5" />
         Ejecutar Completo
       </button>
-      
+
       <button
         onClick={onReset}
         className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:from-red-600 hover:to-rose-600 transition-all duration-200 shadow-sm hover:shadow-md"
