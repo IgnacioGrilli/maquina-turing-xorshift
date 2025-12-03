@@ -9,8 +9,8 @@ export const ExecutionLog = ({ log }) => {
           <div
             key={index}
             className={`py-1 ${
-              line.includes("---") 
-                ? "text-blue-700 font-bold" 
+              line.includes("---")
+                ? "text-blue-700 font-bold"
                 : line.includes("ERROR")
                 ? "text-red-600 font-bold"
                 : line.includes("CICLO")

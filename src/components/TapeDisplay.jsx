@@ -4,24 +4,24 @@ export const TapeDisplay = ({ tape, headPosition, currentState }) => {
   // Encontrar el rango completo de contenido (desde el primer símbolo hasta el último relevante)
   let firstContent = 0;
   let lastContent = tape.length - 1;
-  
+
   // Buscar el primer símbolo que no sea blanco
   for (let i = 0; i < tape.length; i++) {
-    if (tape[i] !== '▲') {
+    if (tape[i] !== "▲") {
       firstContent = i;
       break;
     }
   }
-  
+
   // Buscar el último símbolo relevante (incluyendo el cabezal y margen adelante)
   const searchEnd = Math.min(tape.length, headPosition + 100);
   for (let i = searchEnd; i >= firstContent; i--) {
-    if (tape[i] !== '▲' || i === headPosition) {
+    if (tape[i] !== "▲" || i === headPosition) {
       lastContent = i;
       break;
     }
   }
-  
+
   // Agregar margen
   const margin = 3;
   const start = Math.max(0, firstContent - margin);
@@ -30,40 +30,12 @@ export const TapeDisplay = ({ tape, headPosition, currentState }) => {
 
   return (
     <div className="mt-6 p-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border-2 border-indigo-200">
-      <h3 className="text-xl font-bold text-gray-800 mb-4">
-        Cinta de Turing
-      </h3>
-      
+      <h3 className="text-xl font-bold text-gray-800 mb-4">Cinta de Turing</h3>
+
       {/* Estado actual */}
       <div className="mb-4 p-3 bg-white rounded-lg border border-indigo-300">
         <p className="text-sm font-semibold text-indigo-700">
           Estado: <span className="text-indigo-900">{currentState}</span>
-        </p>
-      </div>
-
-      {/* Resumen de contenido */}
-      <div className="mb-4 p-3 bg-yellow-50 rounded-lg border border-yellow-300">
-        <p className="text-xs font-semibold text-yellow-800 mb-2">
-          📊 Vista general de la cinta:
-        </p>
-        <div className="flex items-center gap-2 flex-wrap text-xs">
-          <span className="text-gray-600">
-            Rango mostrado: 
-            <span className="font-mono font-bold text-indigo-600"> [{start}...{end}]</span>
-          </span>
-          <span className="text-gray-600">|</span>
-          <span className="text-gray-600">
-            Cabezal en: 
-            <span className="font-mono font-bold text-red-600"> {headPosition}</span>
-          </span>
-          <span className="text-gray-600">|</span>
-          <span className="text-gray-600">
-            Total de celdas: 
-            <span className="font-mono font-bold text-gray-800"> {visibleTape.length}</span>
-          </span>
-        </div>
-        <p className="text-xs text-gray-500 mt-1">
-          💡 Tip: Usa el scroll horizontal para ver toda la cinta. Todo el contenido desde el inicio está visible.
         </p>
       </div>
 
@@ -80,7 +52,9 @@ export const TapeDisplay = ({ tape, headPosition, currentState }) => {
                   className="w-8 h-6 flex items-end justify-center"
                 >
                   {actualIndex === headPosition && (
-                    <div className="text-xl text-red-600 animate-bounce leading-none">▼</div>
+                    <div className="text-xl text-red-600 animate-bounce leading-none">
+                      ▼
+                    </div>
                   )}
                 </div>
               );
@@ -92,8 +66,8 @@ export const TapeDisplay = ({ tape, headPosition, currentState }) => {
             {visibleTape.map((symbol, index) => {
               const actualIndex = start + index;
               const isHead = actualIndex === headPosition;
-              const isBlank = symbol === '▲';
-              const isMarker = symbol === '#';
+              const isBlank = symbol === "▲";
+              const isMarker = symbol === "#";
 
               return (
                 <div
@@ -126,11 +100,18 @@ export const TapeDisplay = ({ tape, headPosition, currentState }) => {
       {/* Información de posición */}
       <div className="mt-4 text-center">
         <p className="text-sm text-gray-600">
-          Posición del cabezal: <span className="font-bold text-indigo-700">{headPosition}</span>
+          Posición del cabezal:{" "}
+          <span className="font-bold text-indigo-700">{headPosition}</span>
           {" | "}
-          Símbolo actual: <span className="font-bold text-indigo-700">{tape[headPosition]}</span>
+          Símbolo actual:{" "}
+          <span className="font-bold text-indigo-700">
+            {tape[headPosition]}
+          </span>
           {" | "}
-          Rango visible: <span className="font-bold text-indigo-700">{start} - {end}</span>
+          Rango visible:{" "}
+          <span className="font-bold text-indigo-700">
+            {start} - {end}
+          </span>
         </p>
         <p className="text-xs text-gray-500 mt-1">
           Celdas totales: {tape.length} | Mostrando {visibleTape.length} celdas

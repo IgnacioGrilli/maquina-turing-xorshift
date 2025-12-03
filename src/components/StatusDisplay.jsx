@@ -11,7 +11,10 @@ export const StatusDisplay = ({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <p className="text-sm text-gray-600 mb-1">Estado Actual</p>
-          <p className="text-lg font-semibold text-gray-800 truncate" title={currentState}>
+          <p
+            className="text-lg font-semibold text-gray-800 truncate"
+            title={currentState}
+          >
             {currentState}
           </p>
         </div>
